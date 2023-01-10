@@ -9,7 +9,9 @@
     </div>
 
     <div class="ms-auto">
-      <a href="/product/create" class="btn btn-primary"><i class="fa fa-plus-circle fa-fw me-1"></i> Add Product</a>
+      <a href="/product/create" class="btn btn-primary"
+        ><i class="fa fa-plus-circle fa-fw me-1"></i> Add Product</a
+      >
     </div>
   </div>
 
@@ -18,8 +20,13 @@
       <div class="tab-pane fade show active" id="allTab">
         <!-- BEGIN input-group -->
         <div class="input-group mb-4">
-          <button class="btn btn-default dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true"
-            aria-expanded="false">
+          <button
+            class="btn btn-default dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Filter products &nbsp;
           </button>
           <div class="dropdown-menu">
@@ -31,10 +38,24 @@
           </div>
           <div class="flex-fill position-relative">
             <div class="input-group">
-              <div class="input-group-text position-absolute top-0 bottom-0 bg-none border-0" style="z-index: 1020">
+              <div
+                class="
+                  input-group-text
+                  position-absolute
+                  top-0
+                  bottom-0
+                  bg-none
+                  border-0
+                "
+                style="z-index: 1020"
+              >
                 <i class="fa fa-search opacity-5"></i>
               </div>
-              <input type="text" class="form-control ps-35px" placeholder="Search products" />
+              <input
+                type="text"
+                class="form-control ps-35px"
+                placeholder="Search products"
+              />
             </div>
           </div>
         </div>
@@ -46,7 +67,7 @@
             <thead>
               <tr>
                 <th class="pt-0 pb-2"></th>
-                <th class="pt-0 pb-2">Ảnh chính</th>
+                <th class="pt-0 pb-2">Thumb</th>
                 <th class="pt-0 pb-2">Ảnh chi tiết</th>
                 <th class="pt-0 pb-2">Tên</th>
                 <th class="pt-0 pb-2">Mô tả</th>
@@ -59,92 +80,208 @@
                 <th class="pt-0 pb-2">Danh mục</th>
                 <th class="pt-0 pb-2">Thuộc tính</th>
                 <th class="pt-0 pb-2">Filters</th>
+                <th class="pt-0 pb-2">#</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(product, index) in listProducts" :key="index">
                 <td class="w-10px align-middle">
                   <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="product1" />
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="product1"
+                    />
                     <label class="form-check-label" for="product1"></label>
                   </div>
                 </td>
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="w-60px h-60px bg-gray-100 d-flex align-items-center justify-content-center">
-                      <img alt="" class="mw-100 mh-100" src="/assets/img/product/product-6.jpg" />
+                  <img
+                    alt=""
+                    class="mw-100 mh-100"
+                    :src="listImageThumbnail?.[index]?.[0]?.data"
+                  />
+                  <br />
+                  <button
+                    type="button"
+                    class="btn btn-outline-default btn-sm d-block"
+                    data-bs-toggle="modal"
+                    :data-bs-target="'#modalThumbnail' + index"
+                  >
+                    Sủa
+                  </button>
+                  <div
+                    class="modal modal-cover fade"
+                    :id="'modalThumbnail' + index"
+                  >
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <input-multiple-file
+                          :index="index"
+                          :keyListFile="'previewThumbnail'"
+                          :keyUploadFile="'uploadThumbnail'"
+                          :mutationListFile="'setPreviewThumbnail'"
+                          :mutationUpload="'setUploadThumbnail'"
+                        ></input-multiple-file>
+                      </div>
                     </div>
                   </div>
                 </td>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="w-60px h-60px bg-gray-100 d-flex align-items-center justify-content-center">
-                      <img alt="" class="mw-100 mh-100" src="/assets/img/product/product-6.jpg" />
-                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-outline-default btn-sm"
+                    >
+                      Sủa
+                    </button>
                   </div>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="discountName" id="discountName"
-                    v-model="product.name">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="discountName"
+                    id="discountName"
+                    v-model="product.name"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <textarea @input="checkRowEdit(index)" type="text" name="discountName" id="discountName"
-                    v-model="product.description"></textarea>
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="discountName"
+                    id="discountName"
+                    v-model="product.description"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="discountName" id="discountName"
-                    v-model="product.addinfo">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="discountName"
+                    id="discountName"
+                    v-model="product.addinfo"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="discountName" id="discountName"
-                    v-model="product.default_price">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="discountName"
+                    id="discountName"
+                    v-model="product.default_price"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="selling_price" id="selling_price"
-                    v-model="product.selling_price">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="selling_price"
+                    id="selling_price"
+                    v-model="product.selling_price"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="sku" id="sku" v-model="product.sku">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="sku"
+                    id="sku"
+                    v-model="product.sku"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="slug" id="slug" v-model="product.slug">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="slug"
+                    id="slug"
+                    v-model="product.slug"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <input @input="checkRowEdit(index)" type="text" name="saleCount" id="saleCount"
-                    v-model="product.saleCount">
+                  <textarea
+                    @input="checkRowEdit(index)"
+                    type="text"
+                    name="saleCount"
+                    id="saleCount"
+                    v-model="product.saleCount"
+                  ></textarea>
                 </td>
                 <td class="align-middle">
-                  <select v-model="product.category_id" class="form-control">
-                    <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}
-                    </option>
-                  </select>
+                  <category-widget
+                    :category="product.category"
+                    :image="listImageCategory[index]"
+                    :index="index"
+                  >
+                  </category-widget>
                 </td>
                 <td class="align-middle">
-                  <button type="button" class="btn btn-default me-2" data-bs-toggle="modal"
-                    :data-bs-target="'#modalCoverExample' + index">Xem</button>
+                  <button
+                    type="button"
+                    class="btn btn-default me-2"
+                    data-bs-toggle="modal"
+                    :data-bs-target="'#modalCoverExample' + index"
+                  >
+                    Xem
+                  </button>
 
-                  <div class="modal modal-cover fade" :id="'modalCoverExample' + index">
+                  <div
+                    class="modal modal-cover fade"
+                    :id="'modalCoverExample' + index"
+                  >
                     <div class="modal-dialog">
                       <div class="modal-content">
-                        <edit-property-product @setParentProps="setParentProps($event, index)"
-                          :propertiesList="product.properties">
+                        <edit-property-product
+                          @setParentProps="setParentProps($event, index)"
+                          :propertiesList="product.properties"
+                        >
                         </edit-property-product>
                       </div>
                     </div>
                   </div>
                 </td>
                 <td class="align-middle">
-                  <button type="button" class="btn btn-default me-2" data-bs-toggle="modal"
-                    :data-bs-target="'#editProdFilters' + index">Xem</button>
+                  <button
+                    type="button"
+                    class="btn btn-default me-2"
+                    data-bs-toggle="modal"
+                    :data-bs-target="'#editProdFilters' + index"
+                  >
+                    Xem
+                  </button>
 
-                  <div class="modal modal-cover fade" :id="'editProdFilters' + index">
+                  <div
+                    class="modal modal-cover fade"
+                    :id="'editProdFilters' + index"
+                  >
                     <div class="modal-dialog">
                       <div class="modal-content">
-                        <edit-filters-product @saveParentFilter="saveParentFilter($event, index)"
-                          :filtersList="product.filters"></edit-filters-product>
+                        <edit-filters-product
+                          @saveParentFilter="saveParentFilter($event, index)"
+                          :filtersList="product.filters"
+                        ></edit-filters-product>
                       </div>
                     </div>
                   </div>
+                </td>
+                <td class="align-middle">
+                  <button
+                    type="button"
+                    class="btn btn-primary pr-2"
+                    @click="savecategory(category, index)"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger me-2"
+                    data-bs-toggle="modal"
+                    :data-bs-target="'#modalDeletecategory' + index"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -176,35 +313,91 @@
   </card>
 </template>
 <script>
-import { ProductService } from '../services/product.service'
-import { CategoryService } from '../services/category.service'
-import EditPropertyProduct from './EditPropertyProduct.vue'
-import EditFiltersProduct from './EditFiltersProduct.vue';
+import { ProductService } from "../services/product.service";
+import { CategoryService } from "../services/category.service";
+import EditPropertyProduct from "./EditPropertyProduct.vue";
+import EditFiltersProduct from "./EditFiltersProduct.vue";
+import CategoryWidget from "../components/category/widget.vue";
+import { ImageService } from "../services/image.service";
+import InputMultipleFile from "../components/form/InputMultipleFile.vue";
 export default {
-  components: { EditPropertyProduct, EditFiltersProduct },
+  components: {
+    EditPropertyProduct,
+    EditFiltersProduct,
+    CategoryWidget,
+    InputMultipleFile,
+  },
   methods: {
     viewProductDetail: function (id) {
-      alert('asdas')
+      alert("asdas");
       this.$router.push(`/product/${id}`);
     },
     setParentProps(event, index) {
-      this.listProducts[index].properties = event
+      this.listProducts[index].properties = event;
     },
     saveParentFilter(event, index) {
-      console.log(event)
-      this.listProducts[index].filters = event
+      console.log(event);
+      this.listProducts[index].filters = event;
     },
   },
   data() {
     return {
       listProducts: [],
-      categories: []
-    }
+      categories: [],
+      listImageCategory: [],
+      listImageThumbnail: [],
+    };
   },
   async mounted() {
     const res = await ProductService().getProductPage();
-    this.listProducts = res.data
-    this.categories = await CategoryService().getAllNotPage()
-  }
+    this.listProducts = res.data;
+    this.$store.commit("setListproduct", this.listProducts);
+
+    this.listImageCategory = await Promise.all(
+      this.listProducts.map(async (product) => {
+        if (product.category?.image) {
+          return await ImageService.getBlobSrc(product.category?.image);
+        }
+      })
+    );
+
+    const listFilePreview = [];
+    //add all file to blob
+    await Promise.all(
+      this.listProducts.map(async (product, index) => {
+        const countThumbImage = product.thumb_image.length;
+        if (countThumbImage) {
+          listFilePreview.push(Array(countThumbImage).fill(""));
+          this.listImageThumbnail.push(
+            await Promise.all(
+              product.thumb_image.map(async (img) => {
+                return {
+                  data: await ImageService.getBlobSrc(img.url),
+                  type: img.type,
+                };
+              })
+            )
+          );
+          listFilePreview.push(
+            product.thumb_image.map(async (img) => {
+              return {
+                data: "",
+                type: img.type,
+              };
+            })
+          );
+        }
+      })
+    );
+    this.$store.commit("setPreviewThumbnail", this.listImageThumbnail);
+    this.$store.commit("setUploadThumbnail", listFilePreview);
+  },
 };
 </script>
+<style>
+textarea {
+  border: none;
+  height: 80px;
+  resize: none;
+}
+</style>

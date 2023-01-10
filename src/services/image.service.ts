@@ -23,8 +23,7 @@ export class ImageService {
   }
 
   static async getBlobSrc(minioUrl: string){
-    const res = await fetch(`http://localhost:9000/ecommerce/images/${minioUrl}`)
-    console.log(res)
+    const res = await fetch(`http://localhost:9000/ecommerce/${minioUrl}`)
   const blob = await res.blob()
   return URL.createObjectURL(blob)
   }

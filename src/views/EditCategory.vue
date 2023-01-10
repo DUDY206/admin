@@ -139,7 +139,7 @@ export default {
       let defaultText = []
       let defaultNumber = []
       if (p.type === PropTypes.string) {
-        defaultText = p.values
+        defaultText = [...p.values, ""]
       } else {
         defaultNumber = p.values
       }

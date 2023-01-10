@@ -50,4 +50,38 @@ export const mutations = {
   setListDiscountProduct(state: any, listDiscountProduct: any) {
     state.listDiscountProduct = listDiscountProduct;
   },
+  setShowSearchResult(state: any, showSearchResult: any) {
+    state.showSearchResult = showSearchResult;
+  },
+  setUploadFile(state: any, uploadFile: any) {
+    state.uploadFile = uploadFile;
+  },
+  setUploaduploadFiles(state: any, uploadFiles: any) {
+    state.uploadFiles = uploadFiles;
+  },
+  setPreviewFile(state: any, previewFile: any) {
+    state.previewFile = previewFile;
+  },
+  setPreviewFiles(state: any, previewFiles: any) {
+    state.previewFiles = previewFiles;
+  },
+  setUploadThumbnail(state: any, uploadThumbnail: any) {
+    state.uploadThumbnail = uploadThumbnail;
+  },
+  setPreviewThumbnail(state: any, previewThumbnail: any) {
+    state.previewThumbnail = previewThumbnail;
+  },
+  removeFileAtIndex(
+    state: any,
+    data: {
+      keyListFile: string;
+      keyUploadFile: string;
+      index1: number;
+      index2: number;
+    }
+  ) {
+    const { keyListFile, keyUploadFile, index1, index2 } = data;
+    state[keyListFile]?.[index1].slice(index2, 1);
+    state[keyUploadFile]?.[index1].slice(index2, 1);
+  },
 };

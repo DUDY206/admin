@@ -16,4 +16,11 @@ export const state = {
   post: {},
   listPost: [],
   listDiscountProduct: [],
+  showSearchResult: false,
+  uploadFile: [],
+  uploadFiles: [],
+  previewFile: [],
+  previewFiles: [],
+  uploadThumbnail: [],
+  previewThumbnail: [],
 };
