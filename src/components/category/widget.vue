@@ -16,14 +16,6 @@
             ><i class="fa fa-ellipsis-h"></i
           ></a>
           <div class="dropdown-menu dropdown-menu-right">
-            <button
-              type="button"
-              class="btn btn-default me-2"
-              data-bs-toggle="modal"
-              :data-bs-target="'#modalCategory' + index"
-            >
-              Update
-            </button>
             <a
               @click="deleteCategory"
               class="dropdown-item"
@@ -53,16 +45,16 @@ export default {
     image: "",
     index: Number,
   },
-  data(){
+  data() {
     return {
-      _category: this.category
-    }
+      _category: this.category,
+    };
   },
   methods: {
-    setProductCategory(selectcategory){
-      this._category = selectcategory
-      this.$store.state.listProduct[this.index].category = selectcategory
-    }
+    setProductCategory(selectcategory) {
+      this._category = selectcategory;
+      this.$store.state.listProduct[this.index].category = selectcategory;
+    },
   },
 };
 </script>

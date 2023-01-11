@@ -56,7 +56,7 @@ export const mutations = {
   setUploadFile(state: any, uploadFile: any) {
     state.uploadFile = uploadFile;
   },
-  setUploaduploadFiles(state: any, uploadFiles: any) {
+  setUploadFiles(state: any, uploadFiles: any) {
     state.uploadFiles = uploadFiles;
   },
   setPreviewFile(state: any, previewFile: any) {
@@ -71,6 +71,25 @@ export const mutations = {
   setPreviewThumbnail(state: any, previewThumbnail: any) {
     state.previewThumbnail = previewThumbnail;
   },
+  addFiles(
+    state: any,
+    data: {
+      keyListFile: string;
+      index1: number;
+      src: string;
+      file: any;
+    }
+  ) {
+    const { keyListFile, index1, src, file } = data;
+    let currentStateList = state[keyListFile][index1];
+    currentStateList = [
+      ...currentStateList,
+      {
+        data: src,
+        type: file.type,
+      },
+    ];
+  },
   removeFileAtIndex(
     state: any,
     data: {
@@ -81,7 +100,8 @@ export const mutations = {
     }
   ) {
     const { keyListFile, keyUploadFile, index1, index2 } = data;
-    state[keyListFile]?.[index1].slice(index2, 1);
-    state[keyUploadFile]?.[index1].slice(index2, 1);
+    state[keyListFile]?.[index1].splice(index2, 1);
+    state[keyUploadFile]?.[index1].splice(index2, 1);
+    console.log(state[keyListFile]);
   },
 };

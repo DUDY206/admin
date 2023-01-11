@@ -97,11 +97,10 @@
                 </td>
                 <td>
                   <img
+                    class="preview-media"
                     alt=""
-                    class="mw-100 mh-100"
                     :src="listImageThumbnail?.[index]?.[0]?.data"
                   />
-                  <br />
                   <button
                     type="button"
                     class="btn btn-outline-default btn-sm d-block"
@@ -110,11 +109,8 @@
                   >
                     Sủa
                   </button>
-                  <div
-                    class="modal modal-cover fade"
-                    :id="'modalThumbnail' + index"
-                  >
-                    <div class="modal-dialog">
+                  <div class="modal fade" :id="'modalThumbnail' + index">
+                    <div class="modal-dialog modal-xl">
                       <div class="modal-content">
                         <input-multiple-file
                           :index="index"
@@ -128,13 +124,39 @@
                   </div>
                 </td>
                 <td>
-                  <div class="d-flex align-items-center">
-                    <button
-                      type="button"
-                      class="btn btn-outline-default btn-sm"
-                    >
-                      Sủa
-                    </button>
+                  <img
+                    class="preview-media"
+                    alt=""
+                    :src="listImages?.[index]?.[0]?.data"
+                    v-if="listImages?.[index]?.[0]?.type === 'image'"
+                  />
+                  <video
+                    class="preview-media"
+                    alt=""
+                    v-if="listImages?.[index]?.[0]?.type === 'video'"
+                  >
+                    <source :src="listImages?.[index]?.[0]?.data" />
+                  </video>
+                  <button
+                    type="button"
+                    class="btn btn-outline-default btn-sm d-block"
+                    data-bs-toggle="modal"
+                    :data-bs-target="'#modalImages' + index"
+                  >
+                    Sủa
+                  </button>
+                  <div class="modal fade" :id="'modalImages' + index">
+                    <div class="modal-dialog modal-xl">
+                      <div class="modal-content">
+                        <input-multiple-file
+                          :index="index"
+                          :keyListFile="'previewFiles'"
+                          :keyUploadFile="'uploadFiles'"
+                          :mutationListFile="'setPreviewFiles'"
+                          :mutationUpload="'setUploadFiles'"
+                        ></input-multiple-file>
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td class="align-middle">
@@ -206,7 +228,7 @@
                     type="text"
                     name="saleCount"
                     id="saleCount"
-                    v-model="product.saleCount"
+                    v-model="product.sale_count"
                   ></textarea>
                 </td>
                 <td class="align-middle">
@@ -270,7 +292,7 @@
                   <button
                     type="button"
                     class="btn btn-primary pr-2"
-                    @click="savecategory(category, index)"
+                    @click="updateProduct(index)"
                   >
                     Save
                   </button>
@@ -336,8 +358,26 @@ export default {
       this.listProducts[index].properties = event;
     },
     saveParentFilter(event, index) {
-      console.log(event);
       this.listProducts[index].filters = event;
+    },
+    async updateProduct(index) {
+      const presignThumb = await this.getPresignFileURL(
+        this.$store.state.uploadThumbnail?.[index]
+      );
+      console.log(presignThumb);
+    },
+    async getPresignFileURL(listFile = []) {
+      console.log(listFile);
+      return await Promise.all(
+        listFile.map(async (file) => {
+          if (file) {
+            const response = await ImageService.getPresignUrlImageProduct(
+              file.name
+            );
+            return JSON.parse(response.data.data).formData;
+          }
+        })
+      );
     },
   },
   data() {
@@ -346,12 +386,12 @@ export default {
       categories: [],
       listImageCategory: [],
       listImageThumbnail: [],
+      listImages: [],
     };
   },
   async mounted() {
     const res = await ProductService().getProductPage();
     this.listProducts = res.data;
-    this.$store.commit("setListproduct", this.listProducts);
 
     this.listImageCategory = await Promise.all(
       this.listProducts.map(async (product) => {
@@ -361,13 +401,15 @@ export default {
       })
     );
 
-    const listFilePreview = [];
+    const listUploadThumbnails = [];
+    const listUploadFiles = [];
     //add all file to blob
     await Promise.all(
       this.listProducts.map(async (product, index) => {
+        //thumb image
         const countThumbImage = product.thumb_image.length;
         if (countThumbImage) {
-          listFilePreview.push(Array(countThumbImage).fill(""));
+          listUploadThumbnails.push(Array(countThumbImage).fill(""));
           this.listImageThumbnail.push(
             await Promise.all(
               product.thumb_image.map(async (img) => {
@@ -378,19 +420,33 @@ export default {
               })
             )
           );
-          listFilePreview.push(
-            product.thumb_image.map(async (img) => {
-              return {
-                data: "",
-                type: img.type,
-              };
-            })
+        }
+
+        //images detail
+        const countImages = product.images.length;
+        if (countImages) {
+          listUploadFiles.push(Array(countImages).fill(""));
+          this.listImages.push(
+            await Promise.all(
+              product.images.map(async (img) => {
+                return {
+                  data: await ImageService.getBlobSrc(img.url),
+                  type: img.type,
+                };
+              })
+            )
           );
         }
       })
     );
+
+    //save thumbnail to store
     this.$store.commit("setPreviewThumbnail", this.listImageThumbnail);
-    this.$store.commit("setUploadThumbnail", listFilePreview);
+    this.$store.commit("setUploadThumbnail", listUploadThumbnails);
+
+    //save details image to store
+    this.$store.commit("setPreviewFiles", this.listImages);
+    this.$store.commit("setUploadFiles", listUploadFiles);
   },
 };
 </script>
@@ -399,5 +455,24 @@ textarea {
   border: none;
   height: 80px;
   resize: none;
+}
+
+.modal-dialog {
+  max-width: 80%;
+  align-items: start !important;
+  height: 90vh;
+}
+
+.modal-content {
+  height: 100%;
+  padding: 50px;
+}
+
+table img.preview-media,
+table video.preview-media {
+  width: 150px;
+  height: 150px;
+  object-fit: fill;
+  display: block;
 }
 </style>

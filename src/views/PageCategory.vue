@@ -375,7 +375,9 @@ export default {
     async deletecategory(categoryId) {
       try {
         await CategoryService().deleteOne(categoryId);
-        const toast = new Toast(document.getElementById("toast-update-success"));
+        const toast = new Toast(
+          document.getElementById("toast-update-success")
+        );
         toast.show();
 
         this.success_message = "Xóa category thành công";

@@ -83,19 +83,6 @@
       </div>
       <div class="col-xl-6">
         <div class="form-group mb-3">
-          <label class="form-label" for="slug">Slug</label>
-          <input
-            v-model="createProduct.slug"
-            type="text"
-            class="form-control"
-            id="slug"
-            placeholder="your slug"
-            name="slug"
-          />
-        </div>
-      </div>
-      <div class="col-xl-6">
-        <div class="form-group mb-3">
           <label class="form-label" for="saleCount">saleCount</label>
           <input
             v-model="createProduct.sale_count"
@@ -355,7 +342,7 @@
   <!-- toasts-container -->
 </template>
 <script>
-import { delayTime, closeSearchResult } from '../mixin/mixin';
+import { delayTime, closeSearchResult } from "../mixin/mixin";
 import * as lodash from "lodash";
 import { CategoryService } from "../services/category.service";
 import { Toast } from "bootstrap";
@@ -380,7 +367,7 @@ export default {
     {
       methods: {
         delayTime,
-        closeSearchResult
+        closeSearchResult,
       },
     },
   ],
@@ -418,7 +405,6 @@ export default {
         const response = await ImageService.getPresignUrlImageProduct(
           thumb.name
         );
-        console.log(response);
         presignDatas.push(JSON.parse(response.data.data).formData);
       }
       return presignDatas;
@@ -467,8 +453,8 @@ export default {
           thumbNailPresignedData
         );
 
-        if(this.$store.state.category){
-          this.createProduct.category = this.$store.state.category.id
+        if (this.$store.state.category) {
+          this.createProduct.category = this.$store.state.category.id;
         }
 
         this.createProduct.filters = this.extractFilters();
@@ -482,7 +468,7 @@ export default {
         const toast = new Toast(
           document.getElementById("toast-create-success")
         );
-        this.success_message = "Tạo sản phẩm thành công"
+        this.success_message = "Tạo sản phẩm thành công";
         toast.show();
         await this.delayTime();
         this.$router.push("/product");
@@ -491,7 +477,7 @@ export default {
         const toast = new Toast(
           document.getElementById("toast-create-success")
         );
-        this.success_message = e
+        this.success_message = e;
         toast.show();
       }
     },

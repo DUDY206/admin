@@ -24,3 +24,13 @@
 .table-hover > tbody > tr:hover textarea {
   background: var(--bs-table-hover-bg) !important;
 }
+
+.modal-dialog {
+  max-width: 80%;
+  align-items: start !important;
+  height: 90vh;
+}
+
+.modal-content {
+  height: 100%;
+}

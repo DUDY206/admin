@@ -1,9 +1,10 @@
+import { store } from '../../stores/vuex/store';
 <template>
   <div>
     <input
       type="file"
-      accept="image/*"
-      multiple="multiple"
+      :accept="onlyImage ? 'image/*' : 'image/*,video/*'"
+      :multiple="isMultiple"
       @change="previewMultiFile"
       class="form-control-file"
       id="my-file"
@@ -14,7 +15,7 @@
         <div
           v-for="(item, index) in previewFiles[index]"
           :key="index"
-          class="preview-image col-xl-3"
+          class="preview-image col-xl-2"
         >
           <img
             :src="item.data"
@@ -23,8 +24,16 @@
           />
 
           <video v-else width="320" height="240" controls>
-            <source :src="item" />
+            <source :src="item.data" />
           </video>
+
+          <a
+            href="#"
+            class="btn btn-outline-default btn-sm delete-button"
+            @click="deletefile(index)"
+          >
+            <i class="fas fa-trash-alt"></i>
+          </a>
         </div>
       </template>
     </div>
@@ -39,11 +48,16 @@ export default {
     keyUploadFile: "",
     mutationListFile: "",
     mutationUpload: "",
+    isMultiple: true,
+    onlyImage: false,
   },
   computed: {
     previewFiles: {
       get() {
         return this.$store.state[this.keyListFile];
+      },
+      set(data) {
+        this.$store.commit(this.keyListFile, data);
       },
     },
   },
@@ -51,15 +65,15 @@ export default {
     isImageFile(file) {
       return new RegExp(/image/).test(file);
     },
-    previewMultiFile(event) {
+    async previewMultiFile(event) {
       const input = event.target;
       let count = input.files.length;
       let index = 0;
       const files = [];
-      const previewFiles = [];
-      if (input.files) {
-        console.log(input.files, index);
+      const previewFiles = this.previewFiles[this.index];
+      const lastLength = previewFiles.length;
 
+      if (input.files) {
         while (count--) {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -67,19 +81,67 @@ export default {
               data: e.target.result,
               type: "",
             });
+
+            this.$store.commit("addFiles", {
+              keyListFile: this.keyListFile,
+              keyUploadFile: this.keyUploadFile,
+              index1: this.index,
+              src: e.target.result,
+              file: "",
+            });
+
+            files.map((file, index) => {
+              console.log(index + lastLength);
+              let currentListFile = this.$store.state[this.keyListFile];
+              currentListFile[this.index][index + lastLength].type = file.type;
+              console.log(currentListFile[this.index][index + lastLength]);
+              this.$store.commit(this.mutationListFile, currentListFile);
+            });
           };
-          reader.onload.files.push(input.files[index]);
+          files.push(input.files[index]);
           reader.readAsDataURL(input.files[index]);
           index++;
         }
       }
-      files.map((file, index) => {
-        console.log(file, previewFiles[index]);
-        previewFiles[index].type = file.type;
+
+      let currentUpload = this.$store.state[this.keyUploadFile];
+      currentUpload[this.index] = [
+        ...currentUpload[this.index],
+        ...input.files,
+      ];
+      this.$store.commit(this.mutationUpload, currentUpload);
+    },
+    deletefile(index) {
+      this.$store.commit("removeFileAtIndex", {
+        keyListFile: this.keyListFile,
+        keyUploadFile: this.keyUploadFile,
+        index1: this.index,
+        index2: index,
       });
-      const storeFiles = this.$store.state[this.keyListFile];
-      storeFiles[this.index] = files;
     },
   },
 };
 </script>
+
+<style scoped>
+img.img-fluid,
+video {
+  width: 200px;
+  height: 200px;
+  object-fit: fill;
+  border: 1px solid black;
+}
+
+.preview-image {
+  margin: 20px 0;
+  position: relative;
+}
+
+.preview-image .delete-button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: white;
+  bottom: 00px;
+  right: 30px;
+}
+</style>
