@@ -29,7 +29,8 @@ export const ProductService = () => ({
   },
 
   async deleteOne(id: number) {
-    return true;
+    const response = await httpClient.delete(`/product/${id}`);
+    return response.data.data
   },
 
   async findProduct(text: string) {

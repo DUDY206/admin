@@ -63,10 +63,9 @@
 
         <!-- BEGIN table -->
         <div class="table-responsive" v-dragscroll>
-          <table class="table table-hover text-nowrap" v-dragscroll>
+          <table class="table table-hover text-nowrap">
             <thead>
               <tr>
-                <th class="pt-0 pb-2"></th>
                 <th class="pt-0 pb-2">Thumb</th>
                 <th class="pt-0 pb-2">Ảnh chi tiết</th>
                 <th class="pt-0 pb-2">Tên</th>
@@ -75,7 +74,6 @@
                 <th class="pt-0 pb-2">Giá mặc định</th>
                 <th class="pt-0 pb-2">Giá bán</th>
                 <th class="pt-0 pb-2">Mã SKU</th>
-                <th class="pt-0 pb-2">Slug</th>
                 <th class="pt-0 pb-2">SaleCount</th>
                 <th class="pt-0 pb-2">Danh mục</th>
                 <th class="pt-0 pb-2">Thuộc tính</th>
@@ -89,7 +87,7 @@
                 :key="index"
                 :class="getClassEditted(index)"
               >
-                <td class="w-10px align-middle">
+                <!-- <td class="w-10px align-middle">
                   <div class="form-check">
                     <input
                       type="checkbox"
@@ -98,14 +96,26 @@
                     />
                     <label class="form-check-label" for="product1"></label>
                   </div>
-                </td>
+                </td> -->
                 <td>
                   <img
                     class="preview-media"
                     alt=""
                     :src="listImageThumbnail?.[index]?.[0]?.data"
-                    v-if="listImageThumbnail?.[index]?.[0]?.type === 'image'"
+                    v-if="
+                      isImageFileType(listImageThumbnail?.[index]?.[0]?.type)
+                    "
                   />
+                  <video
+                    width="320"
+                    height="240"
+                    controls=""
+                    class="preview-media"
+                    alt=""
+                    v-else
+                  >
+                    <source :src="listImageThumbnail?.[index]?.[0]?.data" />
+                  </video>
                   <button
                     type="button"
                     class="btn btn-outline-default btn-sm d-block"
@@ -133,13 +143,9 @@
                     class="preview-media"
                     alt=""
                     :src="listImages?.[index]?.[0]?.data"
-                    v-if="listImages?.[index]?.[0]?.type === 'image'"
+                    v-if="isImageFileType(listImages?.[index]?.[0]?.type)"
                   />
-                  <video
-                    class="preview-media"
-                    alt=""
-                    v-if="listImages?.[index]?.[0]?.type === 'video'"
-                  >
+                  <video class="preview-media" alt="" v-else>
                     <source :src="listImages?.[index]?.[0]?.data" />
                   </video>
                   <button
@@ -222,15 +228,6 @@
                   <textarea
                     @input="checkRowEdit(index)"
                     type="text"
-                    name="slug"
-                    id="slug"
-                    v-model="product.slug"
-                  ></textarea>
-                </td>
-                <td class="align-middle">
-                  <textarea
-                    @input="checkRowEdit(index)"
-                    type="text"
                     name="saleCount"
                     id="saleCount"
                     v-model="product.sale_count"
@@ -305,10 +302,53 @@
                     type="button"
                     class="btn btn-danger me-2"
                     data-bs-toggle="modal"
-                    :data-bs-target="'#modalDeletecategory' + index"
+                    :data-bs-target="'#modalDeleteProduct' + index"
                   >
                     Delete
                   </button>
+                  <div class="modal fade" :id="'modalDeleteProduct' + index">
+                    <div class="modal-dialog modal-sm">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Xác nhận san pham</h5>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <table style="border: none">
+                            <tr>
+                              <td><b>ID</b></td>
+                              <td>: {{ product.id }}</td>
+                            </tr>
+                            <tr>
+                              <td><b>Tên</b></td>
+                              <td>: {{ product.name }}</td>
+                            </tr>
+                          </table>
+                        </div>
+                        <div class="modal-footer">
+                          <button
+                            type="button"
+                            class="btn btn-default"
+                            data-bs-dismiss="modal"
+                          >
+                            Hủy
+                          </button>
+                          <button
+                            type="button"
+                            data-bs-dismiss="modal"
+                            class="btn btn-primary"
+                            @click="(event) => deleteProduct(product.id)"
+                          >
+                            Xác nhận
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -348,13 +388,20 @@ import CategoryWidget from "../components/category/widget.vue";
 import { ImageService } from "../services/image.service";
 import InputMultipleFile from "../components/form/InputMultipleFile.vue";
 import * as lodash from "lodash";
-import { checkRowEdit, getClassEditted } from "../mixin/mixin";
+import {
+  checkRowEdit,
+  getClassEditted,
+  toastSuccess,
+  toastError,
+} from "../mixin/mixin";
 export default {
   mixins: [
     {
       methods: {
         checkRowEdit,
         getClassEditted,
+        toastSuccess,
+        toastError,
       },
     },
   ],
@@ -363,6 +410,17 @@ export default {
     EditFiltersProduct,
     CategoryWidget,
     InputMultipleFile,
+  },
+  data() {
+    return {
+      listEditted: [],
+      listProducts: [],
+      categories: [],
+      listImageCategory: [],
+      listImages: [],
+      success_message: "",
+      error_message: "",
+    };
   },
   methods: {
     viewProductDetail: function (id) {
@@ -387,18 +445,23 @@ export default {
     async getNewImagesBeforeUpload(uploadKey, previewKey, index) {
       const currentUploadThumb = this.$store.state[uploadKey][index];
       const presignThumb = await this.getPresignFileURL(currentUploadThumb);
-
       return [
         presignThumb.filter((e) => e),
-        presignThumb.map((presign, index) => {
-          let url;
-          if (presign) url = presign.uploadKey;
-          else url = currentUploadThumb[index];
-
-          return {
-            url,
-            type: this[previewKey][index].type,
-          };
+        presignThumb.map((presign, i) => {
+          if (presign)
+            return {
+              url: presign.key,
+              type: new RegExp(/image/).test(this[previewKey][index][i].type)
+                ? "image"
+                : "video",
+            };
+          else
+            return {
+              url: currentUploadThumb[index],
+              type: new RegExp(/image/).test(this[previewKey][index][i].type)
+                ? "image"
+                : "video",
+            };
         }),
       ];
     },
@@ -410,6 +473,7 @@ export default {
           index
         );
         console.log(newThumb);
+
         const [presignImage, newImage] = await this.getNewImagesBeforeUpload(
           "uploadFiles",
           "listImages",
@@ -417,6 +481,7 @@ export default {
         );
         const updateProduct = lodash.cloneDeep(this.listProducts[index]);
 
+        //update image to presign
         updateProduct.thumb_image = newThumb;
         updateProduct.images = newImage;
         updateProduct.filters = this.extractFilters(updateProduct.filters);
@@ -430,6 +495,16 @@ export default {
         delete updateProduct.stop_sell;
 
         await ProductService().updateOne(updateProduct);
+
+        //upload image when update successful
+        const uploadThumbnailFile = this.$store.state.uploadThumbnail[
+          index
+        ].filter((e) => e instanceof File);
+        const uploadImagesFile = this.$store.state.uploadFiles[index].filter(
+          (e) => e instanceof File
+        );
+        ImageService.uploadMultiplePresign(uploadThumbnailFile, presignThumb);
+        ImageService.uploadMultiplePresign(uploadImagesFile, presignImage);
       } catch (e) {
         console.log(e);
       }
@@ -446,16 +521,25 @@ export default {
         })
       );
     },
+    isImageFileType(fileType) {
+      return new RegExp(/image/).test(fileType);
+    },
+    async deleteProduct(id) {
+      try {
+        const response = await ProductService().deleteOne(id);
+        this.toastSuccess("Delete successfully");
+      } catch (e) {
+        this.toastError("Error deleting product");
+      }
+    },
   },
-  data() {
-    return {
-      listEditted: [],
-      listProducts: [],
-      categories: [],
-      listImageCategory: [],
-      listImageThumbnail: [],
-      listImages: [],
-    };
+
+  computed: {
+    listImageThumbnail: {
+      get() {
+        return this.$store.state.previewThumbnail;
+      },
+    },
   },
   async mounted() {
     this.listEditted = Array(this.listProducts.length).fill(false);
@@ -484,6 +568,7 @@ export default {
         this.listImageThumbnail[index] =
           (await Promise.all(
             product.thumb_image.map(async (img) => {
+              console.log(img);
               return {
                 data: await ImageService.getBlobSrc(img.url),
                 type: img.type,

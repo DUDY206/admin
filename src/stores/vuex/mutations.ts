@@ -102,6 +102,5 @@ export const mutations = {
     const { keyListFile, keyUploadFile, index1, index2 } = data;
     state[keyListFile]?.[index1].splice(index2, 1);
     state[keyUploadFile]?.[index1].splice(index2, 1);
-    console.log(state[keyListFile]);
   },
 };
