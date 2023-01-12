@@ -34,3 +34,16 @@
 .modal-content {
   height: 100%;
 }
+
+.table-hover>tbody>tr.row-editted>* ,
+.table-hover>tbody>tr.row-editted:hover {
+  background: #bcd3ff !important;
+}
+
+.table-hover>tbody>tr.row-editted:hover td{
+  box-shadow: none;
+}
+
+.table-hover>tbody>tr.row-editted input, .table-hover>tbody>tr.row-editted textarea {
+  background: #bcd3ff !important;
+}

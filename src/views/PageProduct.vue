@@ -62,8 +62,8 @@
         <!-- END input-group -->
 
         <!-- BEGIN table -->
-        <div class="table-responsive">
-          <table class="table table-hover text-nowrap">
+        <div class="table-responsive" v-dragscroll>
+          <table class="table table-hover text-nowrap" v-dragscroll>
             <thead>
               <tr>
                 <th class="pt-0 pb-2"></th>
@@ -84,7 +84,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(product, index) in listProducts" :key="index">
+              <tr
+                v-for="(product, index) in listProducts"
+                :key="index"
+                :class="getClassEditted(index)"
+              >
                 <td class="w-10px align-middle">
                   <div class="form-check">
                     <input
@@ -100,6 +104,7 @@
                     class="preview-media"
                     alt=""
                     :src="listImageThumbnail?.[index]?.[0]?.data"
+                    v-if="listImageThumbnail?.[index]?.[0]?.type === 'image'"
                   />
                   <button
                     type="button"
@@ -342,7 +347,17 @@ import EditFiltersProduct from "./EditFiltersProduct.vue";
 import CategoryWidget from "../components/category/widget.vue";
 import { ImageService } from "../services/image.service";
 import InputMultipleFile from "../components/form/InputMultipleFile.vue";
+import * as lodash from "lodash";
+import { checkRowEdit, getClassEditted } from "../mixin/mixin";
 export default {
+  mixins: [
+    {
+      methods: {
+        checkRowEdit,
+        getClassEditted,
+      },
+    },
+  ],
   components: {
     EditPropertyProduct,
     EditFiltersProduct,
@@ -351,7 +366,6 @@ export default {
   },
   methods: {
     viewProductDetail: function (id) {
-      alert("asdas");
       this.$router.push(`/product/${id}`);
     },
     setParentProps(event, index) {
@@ -360,17 +374,70 @@ export default {
     saveParentFilter(event, index) {
       this.listProducts[index].filters = event;
     },
+    extractFilters(filters) {
+      const refFilters = lodash.cloneDeep(filters);
+      return refFilters.map((filter) => {
+        filter.value = filter.value.filter((e) => e);
+        if (filter.value.length == 1) {
+          filter.value = filter.value[0];
+        }
+        return filter;
+      });
+    },
+    async getNewImagesBeforeUpload(uploadKey, previewKey, index) {
+      const currentUploadThumb = this.$store.state[uploadKey][index];
+      const presignThumb = await this.getPresignFileURL(currentUploadThumb);
+
+      return [
+        presignThumb.filter((e) => e),
+        presignThumb.map((presign, index) => {
+          let url;
+          if (presign) url = presign.uploadKey;
+          else url = currentUploadThumb[index];
+
+          return {
+            url,
+            type: this[previewKey][index].type,
+          };
+        }),
+      ];
+    },
     async updateProduct(index) {
-      const presignThumb = await this.getPresignFileURL(
-        this.$store.state.uploadThumbnail?.[index]
-      );
-      console.log(presignThumb);
+      try {
+        const [presignThumb, newThumb] = await this.getNewImagesBeforeUpload(
+          "uploadThumbnail",
+          "listImageThumbnail",
+          index
+        );
+        console.log(newThumb);
+        const [presignImage, newImage] = await this.getNewImagesBeforeUpload(
+          "uploadFiles",
+          "listImages",
+          index
+        );
+        const updateProduct = lodash.cloneDeep(this.listProducts[index]);
+
+        updateProduct.thumb_image = newThumb;
+        updateProduct.images = newImage;
+        updateProduct.filters = this.extractFilters(updateProduct.filters);
+        updateProduct.properties = updateProduct?.properties?.filter((e) => e);
+        updateProduct.category = updateProduct.category?.id;
+
+        delete updateProduct.best_seller;
+        delete updateProduct.featured;
+        delete updateProduct.new;
+        delete updateProduct.slug;
+        delete updateProduct.stop_sell;
+
+        await ProductService().updateOne(updateProduct);
+      } catch (e) {
+        console.log(e);
+      }
     },
     async getPresignFileURL(listFile = []) {
-      console.log(listFile);
       return await Promise.all(
         listFile.map(async (file) => {
-          if (file) {
+          if (file instanceof File) {
             const response = await ImageService.getPresignUrlImageProduct(
               file.name
             );
@@ -382,6 +449,7 @@ export default {
   },
   data() {
     return {
+      listEditted: [],
       listProducts: [],
       categories: [],
       listImageCategory: [],
@@ -390,8 +458,11 @@ export default {
     };
   },
   async mounted() {
+    this.listEditted = Array(this.listProducts.length).fill(false);
+
     const res = await ProductService().getProductPage();
     this.listProducts = res.data;
+    // this.$store.commit("setListproduct", this.listProducts);
 
     this.listImageCategory = await Promise.all(
       this.listProducts.map(async (product) => {
@@ -407,36 +478,31 @@ export default {
     await Promise.all(
       this.listProducts.map(async (product, index) => {
         //thumb image
-        const countThumbImage = product.thumb_image.length;
-        if (countThumbImage) {
-          listUploadThumbnails.push(Array(countThumbImage).fill(""));
-          this.listImageThumbnail.push(
-            await Promise.all(
-              product.thumb_image.map(async (img) => {
-                return {
-                  data: await ImageService.getBlobSrc(img.url),
-                  type: img.type,
-                };
-              })
-            )
-          );
-        }
+
+        listUploadThumbnails[index] =
+          product.thumb_image?.map((img) => img.url) ?? [];
+        this.listImageThumbnail[index] =
+          (await Promise.all(
+            product.thumb_image.map(async (img) => {
+              return {
+                data: await ImageService.getBlobSrc(img.url),
+                type: img.type,
+              };
+            })
+          )) ?? [];
 
         //images detail
         const countImages = product.images.length;
-        if (countImages) {
-          listUploadFiles.push(Array(countImages).fill(""));
-          this.listImages.push(
-            await Promise.all(
-              product.images.map(async (img) => {
-                return {
-                  data: await ImageService.getBlobSrc(img.url),
-                  type: img.type,
-                };
-              })
-            )
-          );
-        }
+        listUploadFiles[index] = product.images?.map((img) => img.url) ?? [];
+        this.listImages[index] =
+          (await Promise.all(
+            product.images.map(async (img) => {
+              return {
+                data: await ImageService.getBlobSrc(img.url),
+                type: img.type,
+              };
+            })
+          )) ?? [];
       })
     );
 
@@ -474,5 +540,9 @@ table video.preview-media {
   height: 150px;
   object-fit: fill;
   display: block;
+}
+
+table {
+  cursor: grab;
 }
 </style>

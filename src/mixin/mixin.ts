@@ -98,3 +98,12 @@ export function toastError(message: string) {
   const toast = new Toast(document.getElementById("toast-error"));
   toast.show();
 }
+
+export function checkRowEdit(index: number) {
+  console.log("here");
+  this.listEditted[index] = true;
+}
+
+export function getClassEditted(index: number) {
+  return this.listEditted[index] ? ["row-editted"] : [];
+}

@@ -82,6 +82,7 @@ export default {
               type: "",
             });
 
+            //add file to both preview and upload state
             this.$store.commit("addFiles", {
               keyListFile: this.keyListFile,
               keyUploadFile: this.keyUploadFile,
@@ -91,10 +92,8 @@ export default {
             });
 
             files.map((file, index) => {
-              console.log(index + lastLength);
               let currentListFile = this.$store.state[this.keyListFile];
               currentListFile[this.index][index + lastLength].type = file.type;
-              console.log(currentListFile[this.index][index + lastLength]);
               this.$store.commit(this.mutationListFile, currentListFile);
             });
           };
