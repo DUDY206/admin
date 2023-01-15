@@ -378,6 +378,11 @@
       </div>
     </div>
   </card>
+
+  <toast-message
+    :success_message="success_message"
+    :error_message="error_message"
+  ></toast-message>
 </template>
 <script>
 import { ProductService } from "../services/product.service";
@@ -388,6 +393,7 @@ import CategoryWidget from "../components/category/widget.vue";
 import { ImageService } from "../services/image.service";
 import InputMultipleFile from "../components/form/InputMultipleFile.vue";
 import * as lodash from "lodash";
+import ToastMessage from "../components/toast/ToastMessage.vue";
 import {
   checkRowEdit,
   getClassEditted,
@@ -410,6 +416,7 @@ export default {
     EditFiltersProduct,
     CategoryWidget,
     InputMultipleFile,
+    ToastMessage,
   },
   data() {
     return {
@@ -485,7 +492,10 @@ export default {
         updateProduct.thumb_image = newThumb;
         updateProduct.images = newImage;
         updateProduct.filters = this.extractFilters(updateProduct.filters);
-        updateProduct.properties = updateProduct?.properties?.filter((e) => e);
+        console.log(this.removeNullValue(updateProduct.properties));
+        updateProduct.properties = this.removeNullValue(
+          updateProduct.properties
+        );
         updateProduct.category = updateProduct.category?.id;
 
         delete updateProduct.best_seller;
@@ -505,6 +515,8 @@ export default {
         );
         ImageService.uploadMultiplePresign(uploadThumbnailFile, presignThumb);
         ImageService.uploadMultiplePresign(uploadImagesFile, presignImage);
+
+        this.toastSuccess("Updated product successfully");
       } catch (e) {
         console.log(e);
       }
@@ -531,6 +543,13 @@ export default {
       } catch (e) {
         this.toastError("Error deleting product");
       }
+    },
+    removeNullValue(properties) {
+      console.log(properties);
+      return properties.map((property) => {
+        property.value = property.value.filter((e) => e);
+        return property;
+      });
     },
   },
 
@@ -621,8 +640,8 @@ textarea {
 
 table img.preview-media,
 table video.preview-media {
-  width: 150px;
-  height: 150px;
+  width: 50px;
+  height: 50px;
   object-fit: fill;
   display: block;
 }

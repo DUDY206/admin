@@ -32,3 +32,12 @@
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  props: {
+    success_message: "",
+    error_message: "",
+  },
+};
+</script>

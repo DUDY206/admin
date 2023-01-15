@@ -20,7 +20,6 @@
 @import '_rtl.scss';
 
 
-.table-hover > tbody > tr:hover input,
 .table-hover > tbody > tr:hover textarea {
   background: var(--bs-table-hover-bg) !important;
 }
@@ -46,4 +45,8 @@
 
 .table-hover>tbody>tr.row-editted input, .table-hover>tbody>tr.row-editted textarea {
   background: #bcd3ff !important;
+}
+
+select option {
+  text-transform: capitalize;
 }

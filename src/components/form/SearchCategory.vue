@@ -50,8 +50,7 @@
     <div class="selected_category" v-if="category.id">
       <div class="list-group mb-3">
         <div class="list-group-item d-flex align-items-center">
-          
-          <img :src="image" alt="">
+          <img :src="image" alt="" />
           <div class="flex-fill ps-3 pe-3">
             <div class="fw-600">{{ category.name }}</div>
             <div class="fs-12px text-muted">
@@ -76,7 +75,7 @@
 
 <script>
 import { CategoryService } from "../../services/category.service";
-import { ImageService } from '../../services/image.service';
+import { ImageService } from "../../services/image.service";
 
 export default {
   data() {
@@ -100,18 +99,19 @@ export default {
       get() {
         return this.$store.state.showSearchResult;
       },
-    }
+    },
   },
   methods: {
     async findCategory(event) {
-      this.$store.commit("setShowSearchResult", true)
+      this.$store.commit("setShowSearchResult", true);
       const text = event.target.value;
       const response = await CategoryService().searchCategory(text);
       this.$store.commit("setListcategory", response);
     },
     async selectCategory(category) {
       this.$store.commit("setCategory", category);
-      if(category.image) this.image = await ImageService.getBlobSrc(category.image)
+      if (category.image)
+        this.image = await ImageService.getBlobSrc(category.image);
     },
     deleteCategory() {
       this.$store.commit("setCategory", {});
@@ -144,7 +144,7 @@ export default {
   background: antiquewhite;
 }
 
-.selected_category img{
+.selected_category img {
   max-width: 50px;
 }
 </style>

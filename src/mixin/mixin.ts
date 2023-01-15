@@ -107,3 +107,7 @@ export function checkRowEdit(index: number) {
 export function getClassEditted(index: number) {
   return this.listEditted[index] ? ["row-editted"] : [];
 }
+
+export function formatCurrenct(amount){
+  return 
+}

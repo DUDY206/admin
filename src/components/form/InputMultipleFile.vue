@@ -1,4 +1,3 @@
-import { store } from '../../stores/vuex/store';
 <template>
   <div>
     <input
@@ -126,6 +125,7 @@ export default {
 img.img-fluid,
 video {
   width: 200px;
+  max-width: 200px;
   height: 200px;
   object-fit: fill;
   border: 1px solid black;
