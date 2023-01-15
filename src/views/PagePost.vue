@@ -208,7 +208,7 @@
                     <div class="modal-dialog modal-sm">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h5 class="modal-title">Xác nhận xóa User</h5>
+                          <h5 class="modal-title">Xác nhận xóa bai viet</h5>
                           <button
                             type="button"
                             class="btn-close"
@@ -218,20 +218,12 @@
                         <div class="modal-body">
                           <table style="border: none">
                             <tr>
-                              <td><b>ID</b></td>
-                              <td>: {{ Post.id }}</td>
+                              <td><b>Tiêu đề</b></td>
+                              <td>: {{ Post.title }}</td>
                             </tr>
                             <tr>
-                              <td><b>Tên</b></td>
-                              <td>: {{ Post.name }}</td>
-                            </tr>
-                            <tr>
-                              <td><b>Ngày bắt đầu</b></td>
-                              <td>: {{ Post.start_time }}</td>
-                            </tr>
-                            <tr>
-                              <td><b>Ngày kết thúc</b></td>
-                              <td>: {{ Post.end_time }}</td>
+                              <td><b>Mô tả</b></td>
+                              <td>: {{ Post.description }}</td>
                             </tr>
                           </table>
                         </div>
@@ -246,7 +238,7 @@
                           <button
                             type="button"
                             class="btn btn-primary"
-                            @click="(event) => deletePost(event, user)"
+                            @click="deletePost(Post.id)"
                           >
                             Xác nhận
                           </button>
@@ -374,14 +366,19 @@ export default {
         if (presignFormData) {
           ImageService.uploadMultiplePresign([file], [presignFormData]);
         }
+        this.toastSuccess("Cập nhật bài viết thành công");
       } catch (e) {
         this.toastError(e);
       }
-
-      this.toastSuccess("Cập nhật bài viết thành công");
     },
-    async deletePost(Post) {
-      await PostService().deleteOne(Post);
+    async deletePost(id) {
+      try {
+        this.toastSuccess("Xoa bài viết thành công");
+        await PostService().deleteOne(id);
+        window.location.reload();
+      } catch (e) {
+        this.toastError(e);
+      }
     },
     checkRowEdit(index) {
       this.listEditted[index] = true;

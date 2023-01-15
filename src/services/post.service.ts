@@ -21,6 +21,7 @@ export const PostService = () => ({
     return response.data.data
   },
   async deleteOne(id: number) {
-    return true;
+    const response =  await httpClient.delete(`/post/${id}`);
+    return response.data.data
   },
 });
