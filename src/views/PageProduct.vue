@@ -150,7 +150,7 @@
                     :src="listImages?.[index]?.[0]?.data"
                     v-if="isImageFileType(listImages?.[index]?.[0]?.type)"
                   />
-                  <video class="preview-media" alt="" v-else>
+                  <video class="preview-media" alt="" controls v-else>
                     <source :src="listImages?.[index]?.[0]?.data" />
                   </video>
                   <button
@@ -519,7 +519,7 @@ export default {
             };
           else
             return {
-              url: currentUploadThumb[index],
+              url: currentUploadThumb[i],
               type: new RegExp(/image/).test(this[previewKey][index][i].type)
                 ? "image"
                 : "video",
@@ -582,7 +582,8 @@ export default {
         listFile.map(async (file) => {
           if (file instanceof File) {
             const response = await ImageService.getPresignUrlImageProduct(
-              file.name
+              file.name,
+              file.type
             );
             return JSON.parse(response.data.data).formData;
           }
@@ -623,9 +624,59 @@ export default {
       });
     },
 
-    goToPage(page) {
+    async goToPage(page) {
       this.page = page;
-      this.search(false);
+      await this.search(false);
+
+      this.listImageCategory = await Promise.all(
+      this.listProducts.map(async (product) => {
+        if (product.category?.image) {
+          return await ImageService.getMediaSrc(product.category?.image);
+        }
+      })
+    );
+
+    const listUploadThumbnails = [];
+    const listUploadFiles = [];
+    //add all file to blob
+    await Promise.all(
+      this.listProducts.map(async (product, index) => {
+        //thumb image
+
+        listUploadThumbnails[index] =
+          product.thumb_image?.map((img) => img.url) ?? [];
+        this.listImageThumbnail[index] =
+          (await Promise.all(
+            product.thumb_image.map(async (img) => {
+              return {
+                data: await ImageService.getMediaSrc(img.url),
+                type: img.type,
+              };
+            })
+          )) ?? [];
+
+        //images detail
+        const countImages = product.images.length;
+        listUploadFiles[index] = product.images?.map((img) => img.url) ?? [];
+        this.listImages[index] =
+          (await Promise.all(
+            product.images.map(async (img) => {
+              return {
+                data: await ImageService.getMediaSrc(img.url),
+                type: img.type,
+              };
+            })
+          )) ?? [];
+      })
+    );
+
+    //save thumbnail to store
+    this.$store.commit("setPreviewThumbnail", this.listImageThumbnail);
+    this.$store.commit("setUploadThumbnail", listUploadThumbnails);
+
+    //save details image to store
+    this.$store.commit("setPreviewFiles", this.listImages);
+    this.$store.commit("setUploadFiles", listUploadFiles);
     },
   },
   computed: {
@@ -658,11 +709,10 @@ export default {
 
     await this.search(false);
     // this.$store.commit("setListproduct", this.listProducts);
-
     this.listImageCategory = await Promise.all(
       this.listProducts.map(async (product) => {
         if (product.category?.image) {
-          return await ImageService.getBlobSrc(product.category?.image);
+          return await ImageService.getMediaSrc(product.category?.image);
         }
       })
     );
@@ -680,7 +730,7 @@ export default {
           (await Promise.all(
             product.thumb_image.map(async (img) => {
               return {
-                data: await ImageService.getBlobSrc(img.url),
+                data: await ImageService.getMediaSrc(img.url),
                 type: img.type,
               };
             })
@@ -693,7 +743,7 @@ export default {
           (await Promise.all(
             product.images.map(async (img) => {
               return {
-                data: await ImageService.getBlobSrc(img.url),
+                data: await ImageService.getMediaSrc(img.url),
                 type: img.type,
               };
             })
@@ -731,8 +781,8 @@ textarea {
 
 table img.preview-media,
 table video.preview-media {
-  width: 50px;
-  height: 50px;
+  width: 150px;
+  height: 150px;
   object-fit: fill;
   display: block;
 }
